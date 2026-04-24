@@ -11,6 +11,6 @@ describe('formatCurrency', () => {
     const out = formatCurrency(1234, 'JPY');
     // JPY shouldn't have decimals
     expect(out).not.toMatch(/\./);
-    expect(out).toMatch(/¥|JPY/);
+    expect(out).toMatch(/[¥￥]|JPY/);
   });
 });

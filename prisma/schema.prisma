@@ -1,0 +1,139 @@
+// Prisma Schema for POS System
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String?
+  password      String
+  role          String   @default("admin")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sales         Sale[]
+  expenses      Expense[]
+  products      Product[]
+  suppliers     Supplier[]
+  settings      BusinessSettings?
+}
+
+model BusinessSettings {
+  id             String   @id @default(uuid())
+  businessName   String   @default("Duka Janja POS")
+  businessEmail  String?
+  businessPhone  String?
+  businessAddress String?
+  theme          String   @default("light")
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Product {
+  id                String   @id @default(uuid())
+  name              String
+  description       String?
+  sku               String   @unique
+  price             Float
+  cost              Float
+  stock             Int      @default(0)
+  lowStockThreshold Int      @default(5)
+  category          String?
+  supplierId        String?
+  supplier          Supplier? @relation(fields: [supplierId], references: [id])
+  createdBy        String
+  creator           User     @relation(fields: [createdBy], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  saleItems         SaleItem[]
+}
+
+model Supplier {
+  id            String   @id @default(uuid())
+  name          String
+  contactPerson String?
+  email         String?
+  phone         String?
+  address       String?
+  createdBy     String
+  creator       User     @relation(fields: [createdBy], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  products      Product[]
+}
+
+model Sale {
+  id              String   @id @default(uuid())
+  saleNumber      String   @unique
+  totalAmount     Float
+  paidAmount      Float
+  change          Float
+  status          String   @default("completed")
+  paymentMethod   String
+  customerName    String?
+  customerContact String?
+  createdBy       String
+  creator         User     @relation(fields: [createdBy], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  items           SaleItem[]
+}
+
+model SaleItem {
+  id         String   @id @default(uuid())
+  sale       Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  saleId     String
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
+  createdAt  DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  description String
+  amount      Float
+  category    String
+  date        DateTime
+  vendor      String?
+  createdBy   String
+  creator     User     @relation(fields: [createdBy], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("unread")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

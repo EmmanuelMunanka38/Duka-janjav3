@@ -467,7 +467,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="text-right">
                             <p className={`font-bold text-sm ${isCritical ? 'text-red-600' : 'text-orange-500'}`}>
-                              {product.stock} {t('common', 'loading')}
+                              {product.stock} {t('inventory', 'stock')}
                             </p>
                             <p className="text-[10px] text-slate-400">
                               {t('inventory', 'lowStockThreshold')}: {product.lowStockThreshold}

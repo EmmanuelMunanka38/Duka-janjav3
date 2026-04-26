@@ -13,12 +13,20 @@ const expenseSchema = z.object({
 
 export async function GET(request: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const branchId = searchParams.get('branchId');
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      createdBy: userId,
+    };
     
     if (category && category !== 'All') {
       where.category = category;
@@ -34,6 +42,10 @@ export async function GET(request: Request) {
         end.setHours(23, 59, 59, 999);
         (where.date as Record<string, Date>).lte = end;
       }
+    }
+
+    if (branchId && branchId !== 'all') {
+      where.branchId = branchId;
     }
 
     const expenses = await prisma.expense.findMany({
@@ -60,6 +72,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const branchId = searchParams.get('branchId');
+
     const body = await request.json();
     const data = expenseSchema.parse(body);
 
@@ -67,6 +82,7 @@ export async function POST(request: Request) {
       data: {
         ...data,
         createdBy: userId,
+        branchId: branchId && branchId !== 'all' ? branchId : null,
       },
     });
 

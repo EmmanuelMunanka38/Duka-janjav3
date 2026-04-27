@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form'; 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAppStore } from '@/store';
+import Image from 'next/image';
+import { ShoppingBag } from 'lucide-react';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -86,7 +88,7 @@ export default function RegisterPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary-container rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="material-symbols-outlined text-white text-3xl">point_of_sale</span>
+            <ShoppingBag className='text-white'/>
             </div>
             <h1 className="text-2xl font-bold text-slate-800">Create Account</h1>
             <p className="text-slate-500 mt-1">Start managing your business</p>
@@ -107,7 +109,7 @@ export default function RegisterPage() {
                 {...register('name')}
                 type="text"
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="John Doe"
+                placeholder="Matola "
               />
               {errors.name && (
                 <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>

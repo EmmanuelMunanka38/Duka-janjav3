@@ -223,7 +223,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-slate-100 dark:bg-slate-900 flex flex-col p-4 space-y-2 font-manrope text-sm font-medium">
+    <aside className="hidden md:flex fixed left-0 top-0 z-40 h-screen w-64 bg-slate-100 dark:bg-slate-900 flex-col p-4 space-y-2 font-manrope text-sm font-medium">
       <div className="px-2 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-primary-container flex items-center justify-center rounded-xl">
@@ -236,7 +236,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto">
+      <nav className="flex-1 space-y-1 overflow-y-auto scrollbar-hide">
         {navItems.map(item => renderNavItem(item))}
       </nav>
 

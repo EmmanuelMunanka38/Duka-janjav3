@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { getUserId } from '@/lib/auth';
 
 const customerSchema = z.object({
@@ -8,24 +8,40 @@ const customerSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   phone: z.string().optional(),
   address: z.string().optional(),
+  creditLimit: z.number().optional(),
+  isCreditEnabled: z.boolean().optional(),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const userId = await getUserId();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+
+    const where: Record<string, unknown> = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search } },
+        { phone: { contains: search } },
+        { email: { contains: search } },
+      ];
+    }
+
     const customers = await prisma.customer.findMany({
-      orderBy: { createdAt: 'desc' },
+      where,
+      orderBy: { name: 'asc' },
     });
 
     const formatted = customers.map((customer) => ({
       ...customer,
-      orderCount: 0,
-      totalSpent: 0,
+      isActive: true,
       createdAt: customer.createdAt.toISOString(),
+      creditBalance: customer.creditBalance || 0,
+      creditLimit: customer.creditLimit || 0,
     }));
 
     return NextResponse.json(formatted);
@@ -35,7 +51,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const userId = await getUserId();
     if (!userId) {
@@ -51,13 +67,14 @@ export async function POST(request: Request) {
         email: data.email || null,
         phone: data.phone || null,
         address: data.address || null,
+        creditLimit: data.creditLimit || 0,
       },
     });
 
-    return NextResponse.json(customer);
+    return NextResponse.json(customer, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid input', details: error.issues }, { status: 400 });
     }
     console.error('Create customer error:', error);
     return NextResponse.json({ error: 'Failed to create customer' }, { status: 500 });

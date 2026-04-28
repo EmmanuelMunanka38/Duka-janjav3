@@ -14,7 +14,7 @@ interface Settings {
 }
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useAppStore();
+  const { theme, setTheme, t } = useAppStore();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -58,13 +58,13 @@ export default function SettingsPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to save settings');
+        throw new Error(t('messages', 'saveError'));
       }
 
       setTheme(data.theme as 'light' | 'dark');
-      setMessage({ type: 'success', text: 'Settings saved successfully!' });
+      setMessage({ type: 'success', text: t('settings', 'settingsSaved') });
     } catch (err) {
-      setMessage({ type: 'error', text: 'Failed to save settings' });
+      setMessage({ type: 'error', text: t('messages', 'saveError') });
     } finally {
       setSaving(false);
     }
@@ -86,8 +86,8 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <Settings className="w-6 h-6 text-slate-600" />
             <div>
-            <h1 className="font-bold text-xl text-slate-800">Settings</h1>
-            <p className="text-xs text-slate-500">Manage your business settings</p>
+            <h1 className="font-bold text-xl text-slate-800">{t('settings', 'title')}</h1>
+            <p className="text-xs text-slate-500">{t('settings', 'businessInfo')}</p>
           </div>
         </div>
       </header>
@@ -95,8 +95,8 @@ export default function SettingsPage() {
       <main className="max-w-2xl mx-auto px-6 py-8">
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-200">
-            <h2 className="text-lg font-bold text-slate-800">Business Information</h2>
-            <p className="text-sm text-slate-500">Update your business details</p>
+            <h2 className="text-lg font-bold text-slate-800">{t('settings', 'businessInfo')}</h2>
+            <p className="text-sm text-slate-500">{t('settings', 'businessInfo')}</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
@@ -113,17 +113,17 @@ export default function SettingsPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Business Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('settings', 'businessName')}</label>
               <input
                 {...register('businessName')}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="Your Business Name"
+                placeholder={t('settings', 'businessName')}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('settings', 'businessEmail')}</label>
                 <input
                   {...register('businessEmail')}
                   type="email"
@@ -132,7 +132,7 @@ export default function SettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('settings', 'businessPhone')}</label>
                 <input
                   {...register('businessPhone')}
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
@@ -142,17 +142,17 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('settings', 'businessAddress')}</label>
               <textarea
                 {...register('businessAddress')}
                 rows={3}
                 className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="123 Business St, City, Country"
+                placeholder={t('settings', 'businessAddress')}
               />
             </div>
 
             <div className="pt-4 border-t border-slate-200">
-              <h3 className="text-sm font-medium text-slate-700 mb-3">Appearance</h3>
+              <h3 className="text-sm font-medium text-slate-700 mb-3">{t('settings', 'appearance')}</h3>
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -164,7 +164,7 @@ export default function SettingsPage() {
                   }`}
                 >
                   <Sun className="w-6 h-6 mb-2 mx-auto" />
-                  <span className="text-sm font-medium">Light</span>
+                  <span className="text-sm font-medium">{t('settings', 'lightMode')}</span>
                 </button>
                 <button
                   type="button"
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                   }`}
                 >
                   <Moon className="w-6 h-6 mb-2 mx-auto" />
-                  <span className="text-sm font-medium">Dark</span>
+                  <span className="text-sm font-medium">{t('settings', 'darkMode')}</span>
                 </button>
               </div>
             </div>
@@ -187,7 +187,7 @@ export default function SettingsPage() {
                 disabled={saving}
                 className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save Settings'}
+                {saving ? t('common', 'loading') : t('settings', 'saveSettings')}
               </button>
             </div>
           </form>

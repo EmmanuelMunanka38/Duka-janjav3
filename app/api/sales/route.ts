@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { getUserId } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
+import { saveDocument } from '@/lib/history';
 
 const saleItemSchema = z.object({
   productId: z.string(),
@@ -17,16 +18,25 @@ const createSaleSchema = z.object({
   paidAmount: z.number().min(0),
   customerName: z.string().optional(),
   customerContact: z.string().optional(),
+  customerId: z.string().optional(),
 });
 
 export async function GET(request: Request) {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const branchId = searchParams.get('branchId');
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    const where: Prisma.SaleWhereInput = {};
+    const where: Prisma.SaleWhereInput = {
+      createdBy: userId,
+    };
     
     if (startDate || endDate) {
       where.createdAt = {};
@@ -38,6 +48,10 @@ export async function GET(request: Request) {
         end.setHours(23, 59, 59, 999);
         where.createdAt.lte = end;
       }
+    }
+
+    if (branchId && branchId !== 'all') {
+      where.branchId = branchId;
     }
 
     const sales = await prisma.sale.findMany({
@@ -126,7 +140,7 @@ export async function POST(request: Request) {
       });
 
       for (const item of data.items) {
-        await tx.product.update({
+        const updatedProduct = await tx.product.update({
           where: { id: item.productId },
           data: {
             stock: {
@@ -134,10 +148,44 @@ export async function POST(request: Request) {
             },
           },
         });
+
+        await checkLowStockNotification(updatedProduct.id, updatedProduct.name, updatedProduct.stock, updatedProduct.lowStockThreshold);
+      }
+
+      if (data.customerId && data.paymentMethod === 'credit') {
+        const customer = await tx.customer.findUnique({
+          where: { id: data.customerId },
+        });
+        
+        if (customer) {
+          const newBalance = (customer.creditBalance || 0) + totalAmount;
+          
+          if (newBalance > customer.creditLimit) {
+            throw new Error(`Credit limit exceeded. Current: ${customer.creditBalance}, Limit: ${customer.creditLimit}`);
+          }
+
+          await tx.customer.update({
+            where: { id: data.customerId },
+            data: { creditBalance: newBalance },
+          });
+        }
       }
 
       return newSale;
     });
+
+    await saveDocument(
+      prisma,
+      'receipt',
+      sale.saleNumber,
+      `Receipt - ${sale.saleNumber}`,
+      JSON.stringify(sale),
+      { amount: totalAmount, customer: data.customerName },
+      userId,
+      sale.branchId,
+      sale.id,
+      data.customerId
+    );
 
     return NextResponse.json(sale);
   } catch (error) {

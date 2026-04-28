@@ -88,7 +88,7 @@ export default function BankPage() {
   };
 
   const handleExport = () => {
-    const currencySymbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : currency === 'KES' ? 'KSh' : currency === 'TZS' ? 'TSh' : currency === 'UGX' ? 'USh' : currency;
+    const currencySymbol = currency === 'USD' ? '$' : 'TSh';
     const csvContent = [
       [t('common', 'bank').toUpperCase(), 'REPORT'],
       [''],

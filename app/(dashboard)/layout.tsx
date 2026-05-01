@@ -1,4 +1,6 @@
+import MobileNav from "@/components/layout/MobileNav";
 import Sidebar from "@/components/layout/Sidebar";
+import TopNav from "@/components/layout/TopNav";
 
 export default function DashboardLayout({
   children,
@@ -7,8 +9,13 @@ export default function DashboardLayout({
 }) {
   return (
     <>
+    <div className="hidden md:flex">
       <Sidebar />
-      <main className="ml-64 min-h-screen">
+    </div>
+    <div className="flex md:hidden">
+      <TopNav />
+    </div>
+      <main className="md:ml-64 min-h-screen pb-20 md:pb-0">
         {children}
       </main>
     </>

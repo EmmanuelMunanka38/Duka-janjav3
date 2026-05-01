@@ -254,7 +254,7 @@ export default function Sidebar() {
           className="flex items-center gap-3 px-3 py-4 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors"
         >
           <Shield className="w-5 h-5" />
-          <span>{t('nav', 'privacyPolicy') || 'Privacy Policy'}</span>
+          <span>{t('help', 'privacyPolicy')}</span>
         </Link>
 
         <button

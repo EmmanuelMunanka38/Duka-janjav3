@@ -4,22 +4,34 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
-  id            String   @id @default(uuid())
-  email         String   @unique
-  name          String?
-  password      String
-  role          String   @default("admin")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  sales         Sale[]
-  expenses      Expense[]
-  products      Product[]
-  suppliers     Supplier[]
-  settings      BusinessSettings?
+  id                  String   @id @default(uuid())
+  email               String   @unique
+  name                String?
+  password            String
+  role                String   @default("admin")
+  onboardingComplete  Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  sales               Sale[]
+  expenses            Expense[]
+  products            Product[]
+  suppliers           Supplier[]
+  settings            BusinessSettings?
+  branches            Branch[]
+  paymentMethods      PaymentMethod[]
+  expenseCategories  ExpenseCategory[]
+  productCategories  ProductCategory[]
+  taxConfigurations TaxConfiguration[]
+  saleReturns        SaleReturn[]
+  purchaseOrders     PurchaseOrder[]
+  purchaseReturns    PurchaseReturn[]
+  chatMessages       ChatMessage[]
+  activityLogs       ActivityLog[]
+  documents         Document[]
 }
 
 model BusinessSettings {
@@ -29,43 +41,87 @@ model BusinessSettings {
   businessPhone  String?
   businessAddress String?
   theme          String   @default("light")
+  invoiceHeader  String?
+  invoiceFooter  String?
   userId         String   @unique
   user           User     @relation(fields: [userId], references: [id])
   createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id                String   @id @default(uuid())
+  type             String
+  messageEn        String
+  messageSw        String
+  branchId         String?
+  relatedRecordId  String?
+  relatedRecordType String?
+  relatedRecordNumber String?
+  isRead           Boolean  @default(false)
+  userId           String
+  createdAt        DateTime @default(now())
 }
 
 model Product {
   id                String   @id @default(uuid())
   name              String
+  nameSw            String?
   description       String?
   sku               String   @unique
+  barcode           String?   @unique
   price             Float
   cost              Float
   stock             Int      @default(0)
   lowStockThreshold Int      @default(5)
-  category          String?
+  categoryId        String?
+  category          ProductCategory? @relation(fields: [categoryId], references: [id])
+  branchId          String?
   supplierId        String?
   supplier          Supplier? @relation(fields: [supplierId], references: [id])
+  unit             String    @default("pc")
+  taxRate          Float     @default(0)
+  isActive         Boolean   @default(true)
   createdBy        String
   creator           User     @relation(fields: [createdBy], references: [id])
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  saleItems         SaleItem[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  saleItems       SaleItem[]
+  purchaseItems  PurchaseItem[]
+  stockHistory   StockHistory[]
+}
+
+model StockHistory {
+  id           String   @id @default(uuid())
+  product      Product  @relation(fields: [productId], references: [id])
+  productId    String
+  quantity    Int
+  previousQty Int
+  newQty      Int
+  type        String
+  reason      String?
+  reference  String?
+  notes      String?
+  branchId    String?
+  userId      String
+  createdAt   DateTime @default(now())
 }
 
 model Supplier {
-  id            String   @id @default(uuid())
-  name          String
-  contactPerson String?
-  email         String?
+  id             String   @id @default(uuid())
+  name           String
+  contactPerson  String?
+  email          String?
   phone         String?
   address       String?
-  createdBy     String
+  creditBalance Float    @default(0)
+  createdBy      String
   creator       User     @relation(fields: [createdBy], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   products      Product[]
+  purchaseOrders PurchaseOrder[]
+  returns       PurchaseReturn[]
 }
 
 model Sale {
@@ -74,15 +130,20 @@ model Sale {
   totalAmount     Float
   paidAmount      Float
   change          Float
+  discount        Float     @default(0)
+  taxAmount      Float     @default(0)
   status          String   @default("completed")
   paymentMethod   String
-  customerName    String?
+  paymentRef     String?
+  customerName   String?
   customerContact String?
+  customerId     String?
+  branchId       String?
   createdBy       String
-  creator         User     @relation(fields: [createdBy], references: [id])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  items           SaleItem[]
+  creator        User     @relation(fields: [createdBy], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  items          SaleItem[]
 }
 
 model SaleItem {
@@ -103,6 +164,7 @@ model Expense {
   amount      Float
   category    String
   date        DateTime
+  branchId    String?
   vendor      String?
   createdBy   String
   creator     User     @relation(fields: [createdBy], references: [id])
@@ -125,15 +187,245 @@ model ChatMessage {
   id        String   @id @default(uuid())
   role      String
   content   String
+  userId    String?
   createdAt DateTime @default(now())
+  user     User?    @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  action     String
+  recordType String
+  recordId  String
+  details   String?
+  oldValues String?
+  newValues String?
+  userId    String?
+  branchId  String?
+  createdAt DateTime @default(now())
+  user     User?    @relation(fields: [userId], references: [id])
+  branch   Branch?  @relation(fields: [branchId], references: [id])
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  type        String
+  reference   String   @unique
+  title       String
+  content     String
+  metadata    String?
+  branchId    String?
+  userId      String?
+  saleId      String?
+  customerId  String?
+  supplierId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User?    @relation(fields: [userId], references: [id])
+  branch      Branch?  @relation(fields: [branchId], references: [id])
 }
 
 model Customer {
+  id            String   @id @default(uuid())
+  name          String
+  email         String?
+  phone         String?
+  address       String?
+  creditBalance Float    @default(0)
+  creditLimit  Float    @default(0)
+  branchId     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Branch {
+  id           String   @id @default(uuid())
+  name         String
+  code        String?
+  location    String?
+  phone       String?
+  email       String?
+  manager     String?
+  isMainBranch Boolean  @default(false)
+  status      String   @default("active")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  activityLogs ActivityLog[]
+  documents    Document[]
+}
+
+model PaymentMethod {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  nameSw       String?
+  type         String
+  code         String   @unique
+  hasReference Boolean  @default(false)
+  referenceLabel String?
+  gatewayKey   String?
+  gatewaySecret String?
+  commission   Float    @default(0)
+  isEnabled    Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ExpenseCategory {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  icon        String?
+  color       String?
+  glAccount   String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductCategory {
   id        String   @id @default(uuid())
   name      String
-  email     String?
-  phone     String?
-  address   String?
+  prefix    String?
+  description String?
+  taxRate   Float    @default(0)
+  isActive  Boolean  @default(true)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  products  Product[]
+}
+
+model TaxConfiguration {
+  id        String   @id @default(uuid())
+  category  String
+  rate      Float
+  isDefault Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SaleReturn {
+  id             String   @id @default(uuid())
+  returnNumber   String   @unique
+  originalSaleId String
+  amount         Float
+  reason         String
+  status         String   @default("pending")
+  refundMethod   String?
+  notes          String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  branchId      String?
+}
+
+model PurchaseOrder {
+  id                String   @id @default(uuid())
+  orderNumber       String   @unique
+  supplier          Supplier @relation(fields: [supplierId], references: [id])
+  supplierId        String
+  branchId          String?
+  status           String   @default("draft")
+  totalAmount      Float    @default(0)
+  paidAmount       Float    @default(0)
+  expectedDate     DateTime?
+  notes            String?
+  createdBy        String
+  user             User     @relation(fields: [createdBy], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  items            PurchaseItem[]
+  payments        PurchasePayment[]
+  returns         PurchaseReturn[]
+}
+
+model PurchaseItem {
+  id              String   @id @default(uuid())
+  purchaseOrder    PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  purchaseOrderId String
+  productId       String
+  product          Product @relation(fields: [productId], references: [id])
+  productName    String
+  quantity       Int
+  unitCost       Float
+  totalCost      Float
+  createdAt      DateTime @default(now())
+}
+
+model PurchasePayment {
+  id              String   @id @default(uuid())
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  purchaseOrderId String
+  amount          Float
+  paymentMethod   String
+  reference      String?
+  paymentDate    DateTime
+  notes          String?
+  createdAt      DateTime @default(now())
+}
+
+model PurchaseReturn {
+  id              String   @id @default(uuid())
+  returnNumber    String   @unique
+  originalOrderId String
+  originalOrder   PurchaseOrder @relation(fields: [originalOrderId], references: [id])
+  supplier       Supplier @relation(fields: [supplierId], references: [id])
+  supplierId     String
+  amount         Float
+  reason         String
+  status         String   @default("pending")
+  notes          String?
+  userId         String
+  user           User    @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  items          PurchaseReturnItem[]
+}
+
+model PurchaseReturnItem {
+  id              String   @id @default(uuid())
+  purchaseReturn  PurchaseReturn @relation(fields: [purchaseReturnId], references: [id], onDelete: Cascade)
+  purchaseReturnId String
+  productId       String
+  productName    String
+  quantity       Int
+  unitCost       Float
+  totalCost      Float
+  createdAt      DateTime @default(now())
+}
+
+model JournalEntry {
+  id               String   @id @default(uuid())
+  date             DateTime
+  description      String
+  descriptionSw    String?
+  debitAccountId   String?
+  creditAccountId  String?
+  amount           Float
+  reference       String?
+  entryType       String?
+  branchId        String?
+  createdAt       DateTime @default(now())
+updatedAt      DateTime @updatedAt
+}
+
+model Account {
+  id       String   @id @default(uuid())
+  code     String   @unique
+  name     String
+  type     String
+  category String
+  isActive Boolean @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

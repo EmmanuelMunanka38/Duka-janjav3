@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       data: { stock: { decrement: data.quantity } },
     });
 
-    await checkLowStockNotification(updated.id, updated.name, updated.stock, updated.lowStockThreshold);
+    await checkLowStockNotification(updated.id, updated.name, updated.stock, updated.lowStockThreshold, userId);
 
     await prisma.stockHistory.create({
       data: {

@@ -30,7 +30,8 @@ export async function POST(request: Request) {
             name: payment.nameEn,
             nameSw: payment.nameSw,
             code: payment.id.toUpperCase(),
-            enabled: true,
+            type: payment.type || 'cash',
+            isEnabled: true,
             userId,
           },
         });
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
             cost: parseFloat(product.cost) || 0,
             stock: parseInt(product.stock) || 0,
             lowStockThreshold: 5,
-            userId,
+            createdBy: userId,
             branchId: branchData.id,
           },
         });
@@ -68,16 +69,15 @@ export async function POST(request: Request) {
         });
       }
 
-      await tx.settings.upsert({
-        where: { key: 'business_name' },
-        update: { value: business.businessName },
-        create: { key: 'business_name', value: business.businessName, userId },
-      });
-
-      await tx.settings.upsert({
-        where: { key: 'currency' },
-        update: { value: business.currency },
-        create: { key: 'currency', value: business.currency, userId },
+      await tx.businessSettings.upsert({
+        where: { userId },
+        update: {
+          businessName: business.businessName,
+        },
+        create: {
+          businessName: business.businessName,
+          userId,
+        },
       });
     });
 

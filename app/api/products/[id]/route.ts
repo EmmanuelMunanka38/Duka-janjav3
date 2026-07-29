@@ -92,9 +92,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
+    const { category: _cat, supplier: _sup, ...scalarData } = data as any;
     const product = await prisma.product.update({
       where: { id },
-      data,
+      data: scalarData,
       include: { supplier: true, category: true },
     });
 
@@ -149,7 +150,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       },
     });
 
-    await checkLowStockNotification(updated.id, updated.name, updated.stock, updated.lowStockThreshold);
+    await checkLowStockNotification(updated.id, updated.name, updated.stock, updated.lowStockThreshold, userId);
 
     return NextResponse.json(updated);
   } catch (error) {

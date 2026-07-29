@@ -135,7 +135,7 @@ function generateInventoryCSV(products: ProductData[]): string {
   const rows = products.map(prod => [
     prod.sku,
     `"${prod.name}"`,
-    prod.category || '',
+    prod.categoryId || '',
     prod.stock.toString(),
     prod.price.toFixed(2),
     prod.cost.toFixed(2),

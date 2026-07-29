@@ -26,7 +26,7 @@ interface DataTableProps<T> {
   sortKey?: string;
   sortDirection?: 'asc' | 'desc';
   language?: 'sw' | 'en';
-  getRowKey?: (item: T) => string;
+  getRowKey?: (item: T, index: number) => string;
 }
 
 export function DataTable<T extends Record<string, unknown>>({

@@ -151,9 +151,11 @@ export async function POST(request: NextRequest) {
       data.barcode = generateBarcode();
     }
 
+    const { category, ...productData } = data;
+
     const product = await prisma.product.create({
       data: {
-        ...data,
+        ...productData,
         lowStockThreshold: data.lowStockThreshold || 5,
         createdBy: userId,
       },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getUserId } from '@/lib/auth';
 
 const generateReturnNumber = async () => {
   const today = new Date();
@@ -74,6 +75,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const userId = await getUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { saleId, amount, reason, branchId } = body;
 
@@ -99,7 +105,8 @@ export async function POST(request: NextRequest) {
     const saleReturn = await prisma.saleReturn.create({
       data: {
         returnNumber,
-        saleId,
+        sale: { connect: { id: saleId } },
+        user: { connect: { id: userId } },
         branchId: branchId || existingSale.branchId,
         amount,
         reason,
@@ -115,8 +122,9 @@ export async function POST(request: NextRequest) {
       },
       include: {
         sale: {
-          include: { customer: true, items: { include: { product: true } } },
+          include: { customer: true, branch: true, items: { include: { product: true } } },
         },
+        processedBy: true,
       },
     });
 

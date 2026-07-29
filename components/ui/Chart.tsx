@@ -5,7 +5,7 @@ import { formatCurrency } from '@/lib/format';
 
 interface ChartProps {
   children: React.ReactNode;
-  height?: number | string;
+  height?: number;
   className?: string;
 }
 

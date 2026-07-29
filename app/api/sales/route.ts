@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { getUserId } from '@/lib/auth';
 import { Prisma } from '@prisma/client';
 import { saveDocument } from '@/lib/history';
+import { checkLowStockNotification } from '@/lib/notifications';
 
 const saleItemSchema = z.object({
   productId: z.string(),
@@ -149,7 +150,7 @@ export async function POST(request: Request) {
           },
         });
 
-        await checkLowStockNotification(updatedProduct.id, updatedProduct.name, updatedProduct.stock, updatedProduct.lowStockThreshold);
+        await checkLowStockNotification(updatedProduct.id, updatedProduct.name, updatedProduct.stock, updatedProduct.lowStockThreshold, userId);
       }
 
       if (data.customerId && data.paymentMethod === 'credit') {
@@ -182,7 +183,7 @@ export async function POST(request: Request) {
       JSON.stringify(sale),
       { amount: totalAmount, customer: data.customerName },
       userId,
-      sale.branchId,
+      sale.branchId ?? undefined,
       sale.id,
       data.customerId
     );

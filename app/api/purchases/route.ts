@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    const enrichedOrders = orders.map(order => {
+    const enrichedOrders = orders.map((order: { supplier: unknown }) => {
       return { ...order, supplier: order.supplier };
     });
 

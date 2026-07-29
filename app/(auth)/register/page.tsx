@@ -7,12 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAppStore } from '@/store';
-<<<<<<< HEAD
-import Image from 'next/image';
-import { ShoppingBag } from 'lucide-react';
-=======
 import { Eye, EyeOff, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
->>>>>>> origin/main
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -116,13 +111,8 @@ export default function RegisterPage() {
 
         <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/50 animate-slide-up">
           <div className="text-center mb-8">
-<<<<<<< HEAD
-            <div className="w-16 h-16 bg-primary-container rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <ShoppingBag className='text-white'/>
-=======
             <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <span className="material-symbols-outlined text-white text-4xl">point_of_sale</span>
->>>>>>> origin/main
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-dark bg-clip-text text-transparent">
               Create Account
@@ -152,13 +142,8 @@ export default function RegisterPage() {
               <input
                 {...register('name')}
                 type="text"
-<<<<<<< HEAD
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                placeholder="Matola "
-=======
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white/50 transition-all"
                 placeholder="John Doe"
->>>>>>> origin/main
               />
               {errors.name && (
                 <p className="text-red-500 text-xs flex items-center gap-1">

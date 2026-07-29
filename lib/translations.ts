@@ -23,7 +23,7 @@ type TranslationKey =
   | 'messages'
   | 'returns';
 
-type Translations = Record<LanguageCode, Record<TranslationKey, Record<string, string>>>;
+type Translations = Record<LanguageCode, Record<string, Record<string, string>>>;
 
 export const translations: Translations = {
   en: {
@@ -2986,7 +2986,6 @@ todaySales: '今日销售',
       warning: 'Onyo',
       info: 'Habari',
       success: 'Mafanikio',
-      error: 'Hitilafu',
       lowStock: 'Hisa Ndogo',
       outOfStock: 'Hakuna Hisa',
       inStock: 'Kwa Hisa',

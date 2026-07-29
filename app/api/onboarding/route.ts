@@ -20,16 +20,19 @@ export async function POST(request: Request) {
           location: branch.location,
           isMainBranch: true,
           status: 'active',
+          userId,
         },
       });
 
-      for (const category of categories) {
-        await tx.category.create({
-          data: {
-            name,
-            userId,
-          },
-        });
+      if (categories && categories.length > 0) {
+        for (const category of categories) {
+          await tx.productCategory.create({
+            data: {
+              name: category.name || category,
+              userId,
+            },
+          });
+        }
       }
 
       for (const payment of payments) {
@@ -38,7 +41,9 @@ export async function POST(request: Request) {
             name: payment.nameEn,
             nameSw: payment.nameSw,
             code: payment.id.toUpperCase(),
-            enabled: true,
+            type: payment.type || 'cash',
+            isEnabled: true,
+            userId,
           },
         });
       }
@@ -53,13 +58,13 @@ export async function POST(request: Request) {
             cost: parseFloat(product.cost) || 0,
             stock: parseInt(product.stock) || 0,
             lowStockThreshold: 5,
-            userId,
+            createdBy: userId,
             branchId: branchData.id,
           },
         });
       }
 
-      if (user.name && user.email && user.password) {
+      if (user.name && user.email) {
         await tx.user.update({
           where: { id: userId },
           data: {
@@ -70,22 +75,15 @@ export async function POST(request: Request) {
         });
       }
 
-      await tx.settings.upsert({
-        where: { key: 'business_name' },
-        update: { value: business.businessName },
-        create: { key: 'business_name', value: business.businessName },
-      });
-
-      await tx.settings.upsert({
-        where: { key: 'currency' },
-        update: { value: business.currency },
-        create: { key: 'currency', value: business.currency },
-      });
-
-      await tx.settings.upsert({
-        where: { key: 'onboarding_complete' },
-        update: { value: 'true' },
-        create: { key: 'onboarding_complete', value: 'true' },
+      await tx.businessSettings.upsert({
+        where: { userId },
+        update: {
+          businessName: business.businessName,
+        },
+        create: {
+          businessName: business.businessName,
+          userId,
+        },
       });
     });
 

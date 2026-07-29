@@ -103,11 +103,12 @@ async function main() {
   ];
 
   for (const product of products) {
+    const { category, ...productData } = product;
     await prisma.product.upsert({
       where: { sku: product.sku },
       update: {},
       create: {
-        ...product,
+        ...productData,
         lowStockThreshold: 10,
         description: `${product.name} - High quality product`,
         createdBy: user.id,

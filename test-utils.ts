@@ -34,7 +34,6 @@ export async function createTestProduct(userId: string, data?: Partial<{
       price: data?.price || 10.00,
       cost: data?.cost || 5.00,
       stock: data?.stock || 100,
-      category: data?.category || 'Test Category',
       createdBy: userId,
     },
   });

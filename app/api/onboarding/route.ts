@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getUserId } from '@/lib/auth';
 
+type TxPrismaClient = Omit<typeof prisma, '$connect' | '$disconnect' | '$on' | '$use' | '$extends'>;
+
 export async function POST(request: Request) {
   try {
     const userId = await getUserId();
@@ -12,7 +14,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { business, branch, payments, categories, product, user } = body;
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: TxPrismaClient) => {
       const branchData = await tx.branch.create({
         data: {
           name: branch.name || 'Main Branch',

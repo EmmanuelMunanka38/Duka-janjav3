@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       orderBy: { name: 'asc' },
     });
 
-    const formatted = customers.map((customer) => ({
+    const formatted = customers.map((customer: { id: string; name: string; email: string | null; phone: string | null; address: string | null; createdAt: Date; creditBalance: number | null; creditLimit: number }) => ({
       ...customer,
       isActive: true,
       createdAt: customer.createdAt.toISOString(),

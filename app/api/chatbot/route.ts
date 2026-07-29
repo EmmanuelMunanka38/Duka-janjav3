@@ -106,7 +106,7 @@ async function buildContext() {
   ]);
 
   const topProducts = await Promise.all(
-    weeklySales.map(async (item) => {
+    weeklySales.map(async (item: { productId: string }) => {
       const product = await prisma.product.findUnique({
         where: { id: item.productId },
         select: { name: true },
@@ -121,9 +121,9 @@ async function buildContext() {
     todaysSalesTotal: todaySales._sum.totalAmount || 0,
     todaysTransactions: todaySales._count,
     lowStockCount: lowStock.length,
-    lowStockProducts: lowStock.map(p => `${p.name} (${p.stock} left)`),
-    outOfStockProducts: outOfStock.map(p => p.name),
-    topProductsThisWeek: topProducts.filter((p): p is string => Boolean(p)),
+    lowStockProducts: lowStock.map((p: { name: string; stock: number }) => `${p.name} (${p.stock} left)`),
+    outOfStockProducts: outOfStock.map((p: { name: string }) => p.name),
+    topProductsThisWeek: topProducts.filter((p: string | undefined): p is string => Boolean(p)),
     userName: user?.name || 'User',
     totalProducts: products,
   };

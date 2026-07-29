@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    const paidAmount = existingOrder.payments.reduce((sum, p) => sum + p.amount, 0) + amount;
+    const paidAmount = existingOrder.payments.reduce((sum: number, p: { amount: number }) => sum + p.amount, 0) + amount;
     
     if (paidAmount > existingOrder.totalAmount) {
       return NextResponse.json({ error: 'Payment exceeds remaining balance' }, { status: 400 });
